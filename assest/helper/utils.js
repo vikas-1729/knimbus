@@ -1,9 +1,9 @@
-const cheerio = require('cheerio');
-const dataModel = require('../../models/data');
+const cheerio = require('cheerio');// cherrio use to help towork with dom
+const dataModel = require('../../models/data');// data Model to handle mogoose databse
 module.exports.jsonFormOxford = function (data) {
   let $ = cheerio.load(data);
 
-  return oxfordHelper($);
+  return oxfordHelper($);//oxford helper convert into json form
 };
 module.exports.jsonFormDoaj = function (data) {
   let $ = cheerio.load(data);
@@ -11,6 +11,7 @@ module.exports.jsonFormDoaj = function (data) {
 };
 
 function oxfordHelper($) {
+    // here we simply fetch from DOM by giving clas sname etc
   let returnArray = [];
   let articleList = $('.al-article-box');
   articleList.each(function (index) {
@@ -25,7 +26,7 @@ function oxfordHelper($) {
       });
     });
     let publishedDate = $(this).find('.al-pub-date').text();
-    if (index > 10) {
+    if (index > 20) {
       return false;
     }
     returnArray.push({
@@ -63,21 +64,21 @@ function doajHelper($) {
 }
 
 module.exports.putInDb = async function (array1, array2) {
-  // first of oxford
+  // first delete all previous entry
   try {
     await dataModel.remove({}, function (err, data) {
       if (err) {
         console.log(err);
       }
     });
-    await Promise.all(
+    await Promise.all(// promise.all so that it wait until all promise occur
       array1.map(async (obj, index) => {
         let author = '';
         obj['authorList'].map((value) => {
           author = author + value.authorName + ',';
         });
 
-        await dataModel.create({
+        await dataModel.create({//create object
           title: obj.title,
           url: obj.url,
           author: author,
@@ -104,6 +105,7 @@ module.exports.putInDb = async function (array1, array2) {
 };
 
 module.exports.fetchFromDb = async function () {
+    //fetching from databse
   let dataOxford = await dataModel
     .find({ from: 'oxford' })
     .select('-_id -__v -createdAt -updatedAt')

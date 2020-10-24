@@ -1,4 +1,4 @@
-const db = require('./config/index');
+const db = require('./config/index'); // requirng database
 
 const startFunction = require('./controller/index');
-startFunction.home();
+startFunction.home(); //start

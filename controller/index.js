@@ -1,38 +1,28 @@
-const axios = require('axios'); // for sending request
-const Nightmare = require('nightmare');
-const urls = require('../assest/helper/urls');
-const utilFunction = require('../assest/helper/utils');
+const axios = require('axios'); // for sending request to handle static scraping
+const Nightmare = require('nightmare'); // for sending request to handle dynamic scraping
+const urls = require('../assest/helper/urls'); // to know urls
+const utilFunction = require('../assest/helper/utils'); // util function
 const URL_OXFORD = urls.oxfordUrl(); //oxford url
-const URL_DOAJ = urls.doajUrl();
-
-//const dataModel = require('../models/data'); //dataModel for db
+const URL_DOAJ = urls.doajUrl(); // doaj url
 
 const nightmare = Nightmare({ show: true });
 module.exports.home = async function () {
   //first fetch from urlOxford
   try {
-    let response1 = await axios.get(URL_OXFORD);
-    let dataOxford = utilFunction.jsonFormOxford(response1.data);
+    let response1 = await axios.get(URL_OXFORD); //get from oxford
+    let dataOxford = utilFunction.jsonFormOxford(response1.data); //convert into json form
 
     let response2 = await nightmare
       .goto(URL_DOAJ)
       .wait('body')
-      .evaluate(() => document.querySelector('body').innerHTML);
+      .evaluate(() => document.querySelector('body').innerHTML); // get from doaj
 
-    let dataDoaj = utilFunction.jsonFormDoaj(response2);
+    let dataDoaj = utilFunction.jsonFormDoaj(response2); // converting into json form
 
     //put data in mongoose
-    // console.log('1', dataOxford, '2', dataDoaj);
     await utilFunction.putInDb(dataOxford, dataDoaj);
-    await utilFunction.fetchFromDb();
+    await utilFunction.fetchFromDb(); //fetch from mongoose
   } catch (error) {
     console.log('err', error);
   }
-
-  // .then((response) => {
-  //   console.log(response);
-  // })
-  // .catch((err) => {
-  //   console.log('err', err);
-  // });
 };
