@@ -15,7 +15,8 @@ module.exports.home = async function () {
     let response2 = await nightmare
       .goto(URL_DOAJ)
       .wait('body')
-      .evaluate(() => document.querySelector('body').innerHTML); // get from doaj
+      .evaluate(() => document.querySelector('body').innerHTML)
+      .end(); // get from doaj
 
     let dataDoaj = utilFunction.jsonFormDoaj(response2); // converting into json form
 

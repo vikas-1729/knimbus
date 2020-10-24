@@ -1,9 +1,9 @@
-const cheerio = require('cheerio');// cherrio use to help towork with dom
-const dataModel = require('../../models/data');// data Model to handle mogoose databse
+const cheerio = require('cheerio'); // cherrio use to help towork with dom
+const dataModel = require('../../models/data'); // data Model to handle mogoose databse
 module.exports.jsonFormOxford = function (data) {
   let $ = cheerio.load(data);
 
-  return oxfordHelper($);//oxford helper convert into json form
+  return oxfordHelper($); //oxford helper convert into json form
 };
 module.exports.jsonFormDoaj = function (data) {
   let $ = cheerio.load(data);
@@ -11,7 +11,7 @@ module.exports.jsonFormDoaj = function (data) {
 };
 
 function oxfordHelper($) {
-    // here we simply fetch from DOM by giving clas sname etc
+  // here we simply fetch from DOM by giving clas sname etc
   let returnArray = [];
   let articleList = $('.al-article-box');
   articleList.each(function (index) {
@@ -49,7 +49,12 @@ function doajHelper($) {
       .find('.doaj-public-search-abstractaction-results')
       .next()
       .attr('href');
-
+    let date = $('.doaj-public-search-record-results')
+      .clone()
+      .children()
+      .remove()
+      .end()
+      .text();
     returnArray.push({
       title: title,
       url: url,
@@ -71,14 +76,16 @@ module.exports.putInDb = async function (array1, array2) {
         console.log(err);
       }
     });
-    await Promise.all(// promise.all so that it wait until all promise occur
+    await Promise.all(
+      // promise.all so that it wait until all promise occur
       array1.map(async (obj, index) => {
         let author = '';
         obj['authorList'].map((value) => {
           author = author + value.authorName + ',';
         });
 
-        await dataModel.create({//create object
+        await dataModel.create({
+          //create object
           title: obj.title,
           url: obj.url,
           author: author,
@@ -105,7 +112,7 @@ module.exports.putInDb = async function (array1, array2) {
 };
 
 module.exports.fetchFromDb = async function () {
-    //fetching from databse
+  //fetching from databse
   let dataOxford = await dataModel
     .find({ from: 'oxford' })
     .select('-_id -__v -createdAt -updatedAt')
